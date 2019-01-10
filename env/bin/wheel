@@ -1,4 +1,4 @@
-#!/Users/galvink/Dev/Python/python-speech-samples/env/bin/python3.7
+#!/Users/galvink/Dev/python/python-speech-samples/env/bin/python2.7
 
 # -*- coding: utf-8 -*-
 import re

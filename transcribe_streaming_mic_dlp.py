@@ -149,7 +149,7 @@ def sendToDLP(transcript, projectID):
     dlpClient = dlp.DlpServiceClient()
     parent = dlpClient.project_path(projectID)
     # Prepare info_types by converting the list of strings into a list of
-    info_types = ['PHONE_NUMBER', 'EMAIL_ADDRESS', 'CREDIT_CARD_NUMBER', 'US_SOCIAL_SECURITY_NUMBER']
+    info_types = ['PHONE_NUMBER', 'EMAIL_ADDRESS', 'CREDIT_CARD_NUMBER', 'US_SOCIAL_SECURITY_NUMBER', 'NAME', 'LOCATION', 'ALL_BASIC']
     # dictionaries (protos are also accepted).
     inspect_config = {
         'info_types': [{'name': info_type} for info_type in info_types]

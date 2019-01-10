@@ -36,7 +36,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/Users/galvink/Dev/Python/python-speech-samples/env"
+set -gx VIRTUAL_ENV "/Users/galvink/Dev/python/python-speech-samples/env"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

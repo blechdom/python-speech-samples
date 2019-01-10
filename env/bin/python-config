@@ -1,4 +1,4 @@
-#!/Users/galvink/Dev/Python/python-speech-samples/env/bin/python
+#!/Users/galvink/Dev/python/python-speech-samples/env/bin/python
 
 import sys
 import getopt

@@ -40,7 +40,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/Users/galvink/Dev/Python/python-speech-samples/env"
+VIRTUAL_ENV="/Users/galvink/Dev/python/python-speech-samples/env"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
