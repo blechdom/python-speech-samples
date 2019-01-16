@@ -23,7 +23,7 @@ To install using pip:
     pip install playsound
 
 Example usage:
-    python speech-to-speech-translation.py
+    python speech_to_speech.py --text "hello"
 """
 from __future__ import division
 
@@ -36,7 +36,6 @@ import html
 
 from google.cloud import speech
 from google.cloud import texttospeech
-from google.cloud import translate
 
 import pyaudio
 from playsound import playsound
@@ -135,7 +134,7 @@ class ResumableMicrophoneStream:
 
             yield b''.join(data)
 
-def synthesize_text(text, language_code):
+def synthesize_text(text):
     global RECORD_INC
     global PLAY_INC
     # print(text)
@@ -148,7 +147,7 @@ def synthesize_text(text, language_code):
     # Note: the voice can also be specified by name.
     # Names of voices can be retrieved with client.list_voices().
     voice = texttospeech.types.VoiceSelectionParams(
-        language_code='it-IT',
+        language_code='en-US',
         ssml_gender=texttospeech.enums.SsmlVoiceGender.FEMALE)
 
     audio_config = texttospeech.types.AudioConfig(
@@ -162,17 +161,6 @@ def synthesize_text(text, language_code):
         print('Audio content written to file output_' + str(RECORD_INC) + '.mp3')
 
     playsound('output_' + str(RECORD_INC) + '.mp3', False)
-
-def translate_text(text):
-    translate_client = translate.Client()
-    target = 'it'
-    translation = translate_client.translate(
-        text,
-        target_language=target)
-    translation = html.unescape(translation['translatedText'])
-    synthesize_text(translation, target)
-    #print(text)
-    print("Translation: " + translation)
 
 def listen_loop(responses, stream):
     """Iterates through server responses and prints them.
@@ -230,7 +218,7 @@ def listen_loop(responses, stream):
                 print('Exiting..')
                 stream.closed = True
                 break
-            translate_text(transcript)
+            synthesize_text(transcript)
             RECORD_INC += 1
             PLAY_INC += 1
             num_chars_printed = 0

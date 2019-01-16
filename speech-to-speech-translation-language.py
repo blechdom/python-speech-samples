@@ -22,9 +22,25 @@ To install using pip:
     pip install pyaudio
     pip install playsound
 
+the --languageFrom argument requires a language code from this list: https://cloud.google.com/speech-to-text/docs/languages
+the --translateLanguage argument requires a language code from this list: https://cloud.google.com/translate/docs/languages
+the --languageTo argument requires a language code from this list: https://cloud.google.com/text-to-speech/docs/voices
+
 Example usage:
-    python speech-to-speech-translation.py
+    python speech-to-speech-translation-language.py --languageFrom 'en-US' --translateLanguage 'fr' --languageTo 'fr-FR'
+    python speech-to-speech-translation-language.py --languageFrom 'en-US' --translateLanguage 'it' --languageTo 'it-IT'
+    python speech-to-speech-translation-language.py --languageFrom 'en-US' --translateLanguage 'jp' --languageTo 'jp-JP'
+    python speech-to-speech-translation-language.py --languageFrom 'en-US' --translateLanguage 'de' --languageTo 'de-DE'
+    python speech-to-speech-translation-language.py --languageFrom 'en-US' --translateLanguage 'sv' --languageTo 'sv-SE'
+    python speech-to-speech-translation-language.py --languageFrom 'en-US' --translateLanguage 'tr' --languageTo 'tr-TR'
+    python speech-to-speech-translation-language.py --languageFrom 'en-US' --translateLanguage 'pt' --languageTo 'pt-BR'
+    python speech-to-speech-translation-language.py --languageFrom 'en-US' --translateLanguage 'nl' --languageTo 'nl-NL'
+    python speech-to-speech-translation-language.py --languageFrom 'en-US' --translateLanguage 'es' --languageTo 'es-ES'
+    python speech-to-speech-translation-language.py --languageFrom 'en-US' --translateLanguage 'ko' --languageTo 'ko-KR'
+    python speech-to-speech-translation-language.py --languageFrom 'fr-FR' --translateLanguage 'en' --languageTo 'en-US'
+    python speech-to-speech-translation-language.py --languageFrom 'de-DE' --translateLanguage 'en' --languageTo 'en-US'
 """
+
 from __future__ import division
 
 import argparse
@@ -135,7 +151,7 @@ class ResumableMicrophoneStream:
 
             yield b''.join(data)
 
-def synthesize_text(text, language_code):
+def synthesize_text(text, langTo):
     global RECORD_INC
     global PLAY_INC
     # print(text)
@@ -148,7 +164,7 @@ def synthesize_text(text, language_code):
     # Note: the voice can also be specified by name.
     # Names of voices can be retrieved with client.list_voices().
     voice = texttospeech.types.VoiceSelectionParams(
-        language_code='it-IT',
+        language_code=langTo,
         ssml_gender=texttospeech.enums.SsmlVoiceGender.FEMALE)
 
     audio_config = texttospeech.types.AudioConfig(
@@ -163,32 +179,16 @@ def synthesize_text(text, language_code):
 
     playsound('output_' + str(RECORD_INC) + '.mp3', False)
 
-def translate_text(text):
+def translate_text(text, translateLang, langTo):
     translate_client = translate.Client()
-    target = 'it'
     translation = translate_client.translate(
         text,
-        target_language=target)
+        target_language=translateLang)
     translation = html.unescape(translation['translatedText'])
-    synthesize_text(translation, target)
-    #print(text)
+    synthesize_text(translation, langTo)
     print("Translation: " + translation)
 
-def listen_loop(responses, stream):
-    """Iterates through server responses and prints them.
-
-    The responses passed is a generator that will block until a response
-    is provided by the server.
-
-    Each response may contain multiple results, and each result may contain
-    multiple alternatives; for details, see https://goo.gl/tjCPAU.  Here we
-    print only the transcription for the top alternative of the top result.
-
-    In this case, responses are provided for interim results as well. If the
-    response is an interim one, print a line feed at the end of it, to allow
-    the next result to overwrite it, until the response is a final one. For the
-    final one, print a newline to preserve the finalized transcription.
-    """
+def listen_loop(responses, stream, translateLang, langTo):
     global RECORD_INC
     global PLAY_INC
     responses = (r for r in responses if (
@@ -230,17 +230,17 @@ def listen_loop(responses, stream):
                 print('Exiting..')
                 stream.closed = True
                 break
-            translate_text(transcript)
+            translate_text(transcript, translateLang, langTo)
             RECORD_INC += 1
             PLAY_INC += 1
             num_chars_printed = 0
 
-def main():
+def main(langFrom, translateLang, langTo):
     client = speech.SpeechClient()
     config = speech.types.RecognitionConfig(
         encoding=speech.enums.RecognitionConfig.AudioEncoding.LINEAR16,
         sample_rate_hertz=SAMPLE_RATE,
-        language_code='en-US',
+        language_code=langFrom,
         max_alternatives=1,
         enable_word_time_offsets=True)
     streaming_config = speech.types.StreamingRecognitionConfig(
@@ -261,8 +261,15 @@ def main():
             responses = client.streaming_recognize(streaming_config,
                                                    requests)
             # Now, put the transcription responses to use.
-            listen_loop(responses, stream)
+            listen_loop(responses, stream, translateLang, langTo)
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('-lf', '--languageFrom', dest='langFrom', required=True, help='the language code you are translating from from speech api')
+    parser.add_argument('-tl', '--translateLanguage', dest='translateLang', required=True, help='the language code you are translating to from translate api')
+    parser.add_argument('-lt', '--languageTo', dest='langTo', required=True, help='the language code you are translating to from text-to-speech api')
+    args = parser.parse_args()
+    main(args.langFrom, args.translateLang, args.langTo)
